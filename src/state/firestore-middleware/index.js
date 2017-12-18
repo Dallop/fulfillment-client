@@ -1,10 +1,5 @@
 import Promise from 'bluebird'
 
-// should support collection realtime
-// should support single doc fetching
-// should support entities
-// should support lists
-// output: {entities {Object}, result {Array}}
 const methods = [ 'onSnapshot', 'get', 'set', 'update', 'add' ]
 
 /**
@@ -76,24 +71,19 @@ export default ({ firestoreInstance, MIDDLEWARE_FLAG }) => {
       return Promise.reject(FirebaseError)
     }
 
+    const { data } = queryConfig
     switch (queryConfig.method) {
       case 'onSnapshot':
         return query.onSnapshot(onSuccess, onFail)
       case 'get':
         return query.get().then(onSuccess).catch(onFail)
+      case 'set':
+        return query.set(data).then(onSuccess).catch(onFail)
       case 'add':
-        return query.add(queryConfig.data).then(onSuccess).catch(onFail)
+        return query.add(data).then(onSuccess).catch(onFail)
       case 'update':
-        return query.update(queryConfig.data).then(onSuccess).catch(onFail)
+        return query.update(data).then(onSuccess).catch(onFail)
     }
-    // onSnapshot(snapshot => (), FirebaseError => ())
-    //  if doc => DocumentSnapshot
-    //  if collection => QuerySnapshot
-    // get().then(DocumentSnapshot).catch()
-    // set(data, options).then().catch()
-    // update(data).then().catch()
-    // add(data).then(firebase.firestore.DocumentReference)
-    // return query[queryConfig.method]()
   }
 }
 

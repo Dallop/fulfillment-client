@@ -18,6 +18,7 @@ import Nav, { NavHeight } from 'App/shared/Nav'
 import AlarmIcon from 'App/shared/AlarmIcon'
 import Avatar from 'App/shared/Avatar'
 import MenuDropdown from 'App/shared/MenuDropdown'
+import Loading from 'App/shared/Loading'
 import {
   getNewOrderEntities,
   getTodaysOrderEntities,
@@ -220,35 +221,39 @@ const ManageOrders = cc({
     }
   },
   renderTabPanel: {
-    0: $this => (
-      <Box>
-        {!$this.props.newOrders.length && (
-        <Flex align='center' textAlign='center' column pt='10%'>
-          <Title fontSize={4} pb={2}>
-                  Waiting On Orders
-                </Title>
+    0: $this => {
+      const { newOrders } = $this.props
+      if (!newOrders.length) {
+        return (
+          <Flex align='center' textAlign='center' column pt='10%'>
+            <Title fontSize={4} pb={2}>
+              Waiting On Orders
+            </Title>
+            <Box
+              is='img'
+              p={1}
+              alt='boy patiently waiting'
+              w='300px'
+              src='https://media.giphy.com/media/tXL4FHPSnVJ0A/giphy.gif'
+            />
+          </Flex>
+        )
+      }
+      const ordersWithConsumerData = newOrders.filter(
+        no => typeof no.consumer !== 'string'
+      )
+      return ordersWithConsumerData.length ? <Box>
+        {$this.props.newOrders.map((no, i) => (
           <Box
-            is='img'
-            p={1}
-            alt='boy patiently waiting'
-            w='300px'
-            src='https://media.giphy.com/media/tXL4FHPSnVJ0A/giphy.gif'
-                />
-        </Flex>
-            )}
-        {$this.props.newOrders
-            .filter(no => typeof no.consumer !== 'string')
-            .map((no, i) => (
-              <Box
-                key={no.id}
-                borderBottom={`solid 1px ${s.colors.darkBase}`}
-                onClick={() => $this.onOrderApproveRequest(no)}
+            key={no.id}
+            borderBottom={`solid 1px ${s.colors.darkBase}`}
+            onClick={() => $this.onOrderApproveRequest(no)}
               >
-                <OrderListing details={no} />
-              </Box>
+            <OrderListing details={no} />
+          </Box>
             ))}
-      </Box>
-    ),
+      </Box> : <Loading />
+    },
     1: $this => (
       <Box>
         {$this.props.orders
@@ -282,6 +287,7 @@ const ManageOrders = cc({
           w='100%'
           bg={s.colors.lightBaseHighlight}
           p={2}
+          pb={4}
           bottom={ora ? 0 : '-100%'}
           left={0}
           zIndex={1}

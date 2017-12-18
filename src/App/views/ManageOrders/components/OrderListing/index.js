@@ -93,7 +93,7 @@ const SelectionLineItem = ({ name, cost, inverted }) => (
 const OrderListing = cc({
   propTypes: {
     details: pt.shape({
-      expectedFulfillmentTime: pt.oneOfType([ pt.string, pt.object ]),
+      fulfillBy: pt.oneOfType([ pt.string, pt.object ]),
       status: pt.string,
       consumer: pt.object,
       createdAt: pt.oneOfType([ pt.string, pt.object ]),
@@ -110,13 +110,13 @@ const OrderListing = cc({
     fulfilled: 'Fulfilled'
   },
   testDate: new Date(),
-  renderHeader ({ status, cost, method, consumer, createdAt }) {
+  renderHeader ({ status, cost, method, consumer, createdAt, fulfillBy }) {
     return (
       <Flex>
         <Flex column align='center' justify='center' w='100px'>
           <Title>{method.label}</Title>
           <Text>{toPrice(cost.total)}</Text>
-          <Countdown until={addMinutes(this.testDate, 90)} />
+          <Countdown until={fulfillBy} />
         </Flex>
         <Box border={`solid 1px ${s.colors.baseHighlight}`} />
         <Flex column justify='center' pl={2} py={1}>
@@ -258,16 +258,18 @@ const Countdown = cc({
   },
   updateTime () {
     const secondsLeft = differenceInSeconds(this.props.until, new Date())
-    this.setState(prev => ({ secondsLeft }))
-    if (secondsLeft !== 0) {
+    if (secondsLeft <= 0) {
+      this.setState(prev => ({ secondsLeft: 0 }))
+    } else {
+      this.setState(prev => ({ secondsLeft }))
       this.countdown = window.setTimeout(this.updateTime, 1000)
     }
   },
   format (secondsLeft) {
-    const hours = pad(Math.floor(secondsLeft / 3600), 2)
+    const hours = Math.floor(secondsLeft / 3600)
     const minutes = pad(Math.floor(secondsLeft % 3600 / 60), 2)
     const seconds = pad(secondsLeft % 60, 2)
-    return `${hours}:${minutes}:${seconds}`
+    return `${hours ? hours + ':' : ''}${minutes}:${seconds}`
   },
   render () {
     return <Text>{this.format(this.state.secondsLeft)}</Text>

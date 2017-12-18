@@ -8,6 +8,7 @@ import App from 'App'
 import { Box, Button } from 'boostly-ui'
 import { callStore } from 'App/state'
 import { createAsyncActions as aa } from 'state/utils'
+import { addMinutes } from 'date-fns'
 
 const selectionSets = [
   {
@@ -36,12 +37,10 @@ const item = {
 }
 
 const base = {
+  menu: 'BWeIgLY3KhuANBwKNIKC',
   consumer: 'KjgMTqqmyBPAg1T0n7c7',
   org: 'DNXpc3V91meNACbhMGBh',
   location: 'thE5G85ID5LL9AoVXFzr',
-  createdAt: 'Sun Nov 19 2017 10:24:15 GMT-0700 (MST)',
-  status: 'awaitingApproval',
-  cost: { total: 25.5, subtotal: 24, tax: 1.5 },
   method: { type: 'PICK_UP', label: 'Pick Up' }
 }
 
@@ -51,23 +50,49 @@ const ControlPanel = connect()(
     getInitialState () {
       return { isOpen: false }
     },
-    createNew () {
+    getTimestampProps () {
       const time = new Date()
+      return {
+        createdAt: time,
+        createdAtUnix: time.getTime(),
+        fulfillBy: addMinutes(new Date(), 10)
+      }
+    },
+    createNew () {
+      this.postNew({
+        ...newOrder,
+        status: 'awaitingApproval',
+        cost: { total: 25.5, subtotal: 24, tax: 1.5 },
+        ...this.getTimestampProps()
+      })
+    },
+    createValidationRequired () {
+      this.postNew({
+        ...base,
+        status: 'awaitingValidation',
+        ...this.getTimestampProps(),
+        items: [
+          {
+            categoryId: 'vJMYiCc35td5u6P2jTfB',
+            description: '(5) wings and your choice of sauce',
+            id: 'WN49WbJeAtnRC5VaheMe',
+            name: 'Regular Wings',
+            quantity: 1,
+            instructions: 'do no screw this up',
+            selections: { Bkpkd2bKq9fdMAAzObXO: [ 'PmSPjyFqUWbiCV00zyom' ] },
+            priceVariationIndex: 0
+          }
+        ]
+      })
+    },
+    postNew (data) {
+      console.log(data)
       this.props.dispatch(
         callStore({
           types: aa('GOD_MODE_CREATE_NEW_ORDER'),
-          query: {
-            data: {
-              ...newOrder,
-              createdAt: time,
-              createdAtUnix: time.getTime()
-            },
-            collection: 'orders',
-            method: 'add'
-          }
+          query: { data, collection: 'orders', method: 'add' }
         })
       )
-      console.log('calling')
     },
     render () {
       const { isOpen } = this.state
@@ -102,6 +127,11 @@ const ControlPanel = connect()(
           </div>
           <Box p={2} w='300px'>
             <Button onClick={this.createNew}>Create New Order</Button>
+          </Box>
+          <Box p={2} w='300px'>
+            <Button onClick={this.createValidationRequired}>
+              Create Validation Required
+            </Button>
           </Box>
         </div>
       )

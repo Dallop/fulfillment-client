@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { Route, Redirect } from 'react-router-dom'
 import cc from 'create-react-class'
 import pt from 'prop-types'
+import Loading from 'App/shared/Loading'
 import { getMe, getAdminEntity } from 'App/state/session'
 
 const PrivateRoute = cc({
@@ -43,7 +44,7 @@ const PrivateRoute = cc({
                 : <Redirect
                   to={{ pathname: '/login', state: { from: props.location } }}
                 />
-              : <div>loading...</div>
+              : <Loading />
         }
       />
     )
